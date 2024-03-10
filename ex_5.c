@@ -12,9 +12,12 @@ int main() {
     company.projects = NULL;
 
     menu(&company);
-    for (int i = 0; i < company.workerCount; i++) {
-        freeWorker(company.workers[i]);
-    }
+
+    freeWorkers(company.workers, company.workerCount);
+    company.workers = NULL;
+    freeProjects(company.projects, company.projectCount);
+    company.projects = NULL;
+
     return 0;
 }
 
@@ -35,19 +38,22 @@ void menu(Company *company) {
         "7. Leave the company\n"
         "8. Exit\n"
     );
-    scanf( "%d", &selectedOption );
+    scanf("%d", &selectedOption);
 
-    if ( selectedOption > 8 || selectedOption < 1 ) {
+    if (selectedOption > 8 || selectedOption < 1 ) {
         printf( "Invalid choice. Please try again." );
         return menu(company);
     }
-    if ( selectedOption == FIRST_OPTION ) {
+    if (selectedOption == FIRST_OPTION) {
         firstOption(company);
     }
-    if ( selectedOption == SECOND_OPTION ) {
+    if (selectedOption == SECOND_OPTION) {
         secondOption(company);
     }
-    if ( selectedOption == EIGHTH_OPTION ) {
+    if (selectedOption == THIRD_OPTION) {
+        thirdOption(company);
+    }
+    if (selectedOption == EIGHTH_OPTION) {
         return;
     }
     menu(company);
@@ -79,7 +85,8 @@ void firstOption(Company *company) {
     if (worker->name == NULL) {
         exit(FAILED_TO_ALLOCATE_WORKER_NAME_CODE);
     }
-    strcpy(company->workers[company->workerCount]->name, workerName);
+    strcpy(worker->name, workerName);
+    free(workerName);
     worker->projectCount = 0;
     worker->projects = NULL;
     company->workerCount++;
@@ -88,21 +95,12 @@ void secondOption(Company *company) {
     char *projectName = NULL;
     Worker *worker = NULL;
     Project *project = NULL;
-    int chosenWorkerIndex;
     if (company->workerCount == 0) {
         printf("There are no workers in the company yet, please join the company first.\n");
         return;
     }
     printf("Who are you? Choose a number:\n");
-    for (int i = 0; i < company->workerCount; i++) {
-        printf("%d. %s\n", i+1, company->workers[i]->name);
-    }
-    scanf("%d", &chosenWorkerIndex);
-    if (chosenWorkerIndex - 1 > company->workerCount || chosenWorkerIndex < 0) {
-        printf("Invalid worker selection.\n");
-        return;
-    }
-    worker = company->workers[chosenWorkerIndex - 1];
+    worker = selectWorkerByIndex(company->workers, company->workerCount, "Enter your choice: ");
     printf("Enter the name of the new project: ");
     projectName = getChars();
     company->projects = (Project**)realloc(company->projects, (company->projectCount + 1) * sizeof(Project*));
@@ -125,26 +123,85 @@ void secondOption(Company *company) {
     }
     project->workers[0] = worker;
     project->workerCount = 1;
-    project->features = (FeatureNode*)malloc(sizeof(FeatureNode));
-    if (project->features == NULL) {
-        exit(FAILED_TO_ALLOCATE_PROJECT_FEATURES_CODE);
-    }
+    project->features = NULL; 
     worker->projects = (Project**)realloc(worker->projects, (worker->projectCount + 1) * sizeof(Project*));
     if (worker->projects == NULL) {
         exit(FAILED_TO_REALLOCATE_WORKER_PROJECT_ARRAY_CODE);
     }
+    free(projectName);
     worker->projects[worker->projectCount] = project;
     worker->projectCount++;
     company->projectCount++;
 }
-void freeWorker( Worker *worker ) {
-    free( worker->name );
-    for ( int i = 0; i < worker->projectCount; i++ )
-        freeProject(worker->projects[i]);
+void thirdOption(Company *company) {
+    Worker *worker = NULL;
+    Project *project = NULL;
+
+    if (company->workerCount == 0) {
+        printf("There are no workers in the company yet, please join the company first.\n");
+        return;
+    }
+    if (company->projectCount == 0) {
+        printf("There are no projects in the company yet, please create one first.\n");
+        return;
+    }
+    printf("Select a worker to join a project:\n");
+    worker = selectWorkerByIndex(company->workers, company->workerCount, "Enter the worker's number: ");
+    project = selectProjectByIndex(company->projects, company->projectCount, "Enter the project's number: ");
+    if (isWorkerInProject(project, worker)) {
+        printf("This worker is already part of the project '%s'.\n", project->name);
+        return;
+    }
+    if (project->workerCount >= 4) {
+        printf("Project is full.\n");
+        return;
+    }
+    project->workers = (Worker**)realloc(
+        project->workers,
+        (project->workerCount + 1) * sizeof(Worker*)
+    );
+    project->workers[project->workerCount] = worker;
+    project->workerCount++;
+
+    worker->projects = (Project**)realloc(
+        worker->projects,
+        (worker->projectCount + 1) * sizeof(Project*)
+    );
+    worker->projects[worker->projectCount] = project;
+    worker->projectCount++;
+}
+void freeWorkers(Worker **workers, int workerCount) {
+    if (workers == NULL) return;
+    for (int i = 0; i < workerCount; i++) {
+        if (workers[i] != NULL) freeWorker(workers[i]);
+        workers[i] = NULL;
+    }
+    free(workers);
+}
+void freeWorker(Worker *worker) {
+    free(worker->name);
+    free(worker->projects);
+    free(worker);
+}
+void freeProjects(Project **projects, int projectCount) {
+    if (projects == NULL) return;
+    for (int i = 0; i < projectCount; i++) {
+        if (projects[i] != NULL) freeProject(projects[i]);
+        projects[i] = NULL;
+    }
+    free(projects);
 }
 void freeProject(Project *project) {
     free(project->name);
-    return;
+    free(project->workers);
+    freeFeatures(project->features);
+    free(project);
+}
+void freeFeatures(FeatureNode *head) {
+    if (head == NULL) return;
+    freeFeatures(head->next);
+    free(head->feature);
+    free(head->next);
 }
 void printWorkers(Worker **workers, int numOfWorkers) {
     printf("Workers: [");
@@ -193,8 +250,43 @@ char *getChars(void) {
         string[currentSize] = c;
         currentSize++;
     }
-    string = (char*) realloc(string, currentSize * sizeof(char));
+    string = (char*) realloc(string, (currentSize + 1) * sizeof(char));
     if (string == NULL) exit(FAILED_TO_ALLOCATE_STRING_CODE);
     string[currentSize] = '\0';
-    return string;    
+    return string;
+}
+Worker *selectWorkerByIndex(Worker **workers, int workerCount, char *message) {
+    int chosenWorkerIndex;
+    for (int i = 0; i < workerCount; i++) {
+        printf("%d. %s\n", i+1, workers[i]->name);
+    }
+    printf("%s", message);
+    scanf("%d", &chosenWorkerIndex);
+    chosenWorkerIndex--;
+    if (chosenWorkerIndex > workerCount || chosenWorkerIndex < 0) {
+        printf("Invalid worker selection.\n");
+        return NULL;
+    }
+
+    return workers[chosenWorkerIndex];
+}
+Project *selectProjectByIndex(Project **projects, int projectCount, char *message) {
+    int chosenProjectIndex;
+    for (int i = 0; i < projectCount; i++) {
+        printf("%d. %s\n", i+1, projects[i]->name);
+    }
+    printf("%s", message);
+    scanf("%d", &chosenProjectIndex);
+    chosenProjectIndex--;
+    if (chosenProjectIndex > projectCount || chosenProjectIndex < 0) {
+        printf("Invalid worker selection.\n");
+        return NULL;
+    }
+    return projects[chosenProjectIndex];
+}
+boolean isWorkerInProject(Project *project, Worker *worker) {
+    for (int i = 0; i < project->workerCount; i++) {
+        if (strcmp(project->workers[i]->name, worker->name) == 0) return true;
+    }
+    return false;
 }
