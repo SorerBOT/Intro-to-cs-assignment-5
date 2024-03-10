@@ -53,6 +53,12 @@ void menu(Company *company) {
     if (selectedOption == THIRD_OPTION) {
         thirdOption(company);
     }
+    if (selectedOption == FOURTH_OPTION) {
+        fourthOption(company);
+    }
+    if (selectedOption == FIFTH_OPTION) {
+        fifthOption(company);
+    }
     if (selectedOption == EIGHTH_OPTION) {
         return;
     }
@@ -169,6 +175,61 @@ void thirdOption(Company *company) {
     );
     worker->projects[worker->projectCount] = project;
     worker->projectCount++;
+}
+void fourthOption(Company *company) {
+    Worker *worker = NULL;
+    Project *project = NULL;
+    FeatureNode *feature = NULL;
+
+    if (company->projectCount == 0) {
+        printf("There are no projects to display.\n");
+        return;
+    }
+    for (int i = 0; i < company->projectCount; i++) {
+        project = company->projects[i];
+        printf("Project: %s\n", project->name);
+        printf("  Workers in this project:\n");
+        if (project->workerCount == 0) printf("    None\n");
+        else {
+            for (int j = 0; j < project->workerCount; j++) {
+                worker = project->workers[j];
+                printf("    - %s\n", worker->name);
+            }
+        }
+        printf("  Features of the project:\n");
+        if (project->features == NULL) printf("    No features\n");
+        else {
+            feature = project->features;
+            while (feature != NULL) {
+                printf("    - %s\n", feature->feature);
+                feature = feature->next;
+            }
+        }
+    }
+    printf("\n");
+}
+void fifthOption(Company *company) {
+    Worker *worker = NULL;
+    Project *project = NULL;
+
+    if (company->workerCount == 0) {
+        printf("There are no workers to display.\n");
+        return;
+    }
+    for (int i = 0; i < company->workerCount; i++) {
+        worker = company->workers[i];
+        printf("Worker: %s\n", worker->name);
+        if (worker->projectCount == 0) {
+            printf("  Not involved in any projects.\n");
+            continue;
+        }
+        printf("  Projects this worker is involved in:\n");
+        for (int j = 0; j < worker->projectCount; j++) {
+            project = worker->projects[j];
+            printf("    - %s\n", project->name);
+        }
+    }
+    printf("\n");
 }
 void freeWorkers(Worker **workers, int workerCount) {
     if (workers == NULL) return;

@@ -85,6 +85,8 @@ void freeAllAllocations(Worker *workers[], int workerCount, Project *projects[],
 void firstOption(Company *company);
 void secondOption(Company *company);
 void thirdOption(Company *company);
+void fourthOption(Company *company);
+void fifthOption(Company *company);
 void printWorkers(Worker **workers, int numOfWorkers);
 void printProjects(Project **projects, int numOfProjects);
 Worker *selectWorkerByIndex(Worker **workers, int workerCount, char *message);
