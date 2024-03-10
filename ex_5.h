@@ -8,7 +8,8 @@
 #define SIXTH_OPTION 6
 #define SEVENTH_OPTION 7
 #define EIGHTH_OPTION 8
-
+#define ADD_PROJECT_COMMAND "add"
+#define REMOVE_PROJECT_COMMAND "remove"
 // Exit codes
 #define FAILED_TO_ALLOCATE_WORKERS_ARRAY_CODE 101
 #define FAILED_TO_ALLOCATE_STRING_CODE 102
@@ -20,6 +21,8 @@
 #define FAILED_TO_ALLOCATE_PROJECT_WORKERS_ARRAY_CODE 108
 #define FAILED_TO_ALLOCATE_PROJECT_FEATURES_CODE 109
 #define FAILED_TO_REALLOCATE_WORKER_PROJECT_ARRAY_CODE 110
+#define FAILED_TO_ALLOCATE_FEATURE_CODE 111
+#define FAILED_TO_ALLOCATE_FEATURE_STRING_CODE 112
 // Forward declarations
 typedef struct Worker Worker;
 typedef struct FeatureNode FeatureNode;
@@ -87,7 +90,9 @@ void secondOption(Company *company);
 void thirdOption(Company *company);
 void fourthOption(Company *company);
 void fifthOption(Company *company);
+void sixthOption(Company *company);
 void printWorkers(Worker **workers, int numOfWorkers);
 void printProjects(Project **projects, int numOfProjects);
 Worker *selectWorkerByIndex(Worker **workers, int workerCount, char *message);
 Project *selectProjectByIndex(Project **projects, int projectCount, char *message);
+char *selectFeatureByIndex(FeatureNode *features, char *message);
