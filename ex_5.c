@@ -73,7 +73,10 @@ void menu(Company *company) {
 void firstOption(Company *company) {
     Worker *worker = NULL;
     char *workerName = NULL;
-
+    if (company->workerCount >= MAX_WORKERS) {
+        printf("The company is at full capacity.\n");
+        return;
+    }
     printf("Enter the name of the new worker: ");
     workerName = getChars();
     if (isWorkerNameExists(company->workers, company->workerCount, workerName)) {
@@ -108,6 +111,10 @@ void secondOption(Company *company) {
     Project *project = NULL;
     if (company->workerCount == 0) {
         printf("There are no workers in the company yet, please join the company first.\n");
+        return;
+    }
+    if (company->projectCount >= MAX_PROJECTS) {
+        printf("Maximum number of projects reached.\n");
         return;
     }
     printf("Who are you? Choose a number:\n");
