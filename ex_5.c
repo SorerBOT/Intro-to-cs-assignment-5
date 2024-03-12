@@ -22,9 +22,6 @@ int main() {
 }
 
 void menu(Company *company) {
-    //if (company->workerCount > 0) printWorkers(company->workers, company->workerCount);
-    //if (company->projectCount > 0) printProjects(company->projects, company->projectCount);
-
     int selectedOption;
     printf(
         "Welcome!\n"
@@ -392,30 +389,6 @@ void freeFeatures(FeatureNode *head) {
     freeFeatures(head->next);
     free(head->feature);
     free(head);
-}
-void printWorkers(Worker **workers, int numOfWorkers) {
-    printf("Workers: [");
-    for (int i = 0; i < numOfWorkers; i++) {
-        printf("%s", workers[i]->name);
-        if (i != numOfWorkers - 1) printf(", ");
-    }
-    printf("]\n");
-}
-void printProjects(Project **projects, int numOfProjects) {
-    printf("Projects: [\n");
-    for (int i = 0; i < numOfProjects; i++) {
-        Project *project = projects[i];
-        printf("\t{\n");
-        printf("\t\tName: %s\n", project->name);
-        printf("\t\tWorker count: %d\n", project->workerCount);
-        if (project->features != NULL) printf("\t\tFeatures: %s\n", project->features->feature);
-        printf("\t\t");
-        printWorkers(project->workers, project->workerCount);
-        printf("\t}");
-        if (i != numOfProjects - 1) printf(",");
-        printf("\n");
-    }
-    printf("]\n");
 }
 boolean isWorkerNameExists(Worker *workers[], int workerCount, const char *name) {
     for (int i = 0; i < workerCount; i++) {
