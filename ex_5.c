@@ -1,3 +1,8 @@
+/**
+ * NAME: Alon Filler
+ * ID: 216872374
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,14 +10,15 @@
 #include "ex_5.h"
 
 int main() {
+    // most of the comments are found in the ex_5.h file for the comfortability of the reader 
+    // Initializing a new company
     Company company;
     company.workerCount = 0;
     company.projectCount = 0;
     company.workers = NULL;
     company.projects = NULL;
-
     menu(&company);
-
+    // freeing the memory
     freeWorkers(company.workers, company.workerCount);
     company.workers = NULL;
     freeProjects(company.projects, company.projectCount);
@@ -397,13 +403,13 @@ void freeFeatures(FeatureNode *head) {
     free(head->feature);
     free(head);
 }
-boolean isWorkerNameExists(Worker *workers[], int workerCount, const char *name) {
+boolean isWorkerNameExists(Worker **workers, int workerCount, const char *name) {
     for (int i = 0; i < workerCount; i++) {
         if (strcmp(workers[i]->name, name) == 0) return true;
     }
     return false;
 }
-boolean isProjectNameExists(Project *projects[], int projectCount, const char *name) {
+boolean isProjectNameExists(Project **projects, int projectCount, const char *name) {
     for (int i = 0; i < projectCount; i++) {
         if (strcmp(projects[i]->name, name) == 0) return true;
     }
@@ -412,13 +418,13 @@ boolean isProjectNameExists(Project *projects[], int projectCount, const char *n
 char *getChars(void) {
     int currentSize = 0;
     char c;
-    char spaceEater; 
     char* string = NULL;
-    while (scanf("%c", &spaceEater) == 1 && (spaceEater == ' '));
-    if (spaceEater != ' ' && spaceEater != '\n') {
+    // Clearing the buffer from spaces and newlines
+    while (scanf("%c", &c) == 1 && ((c == ' ') || (c == '\n')));
+    if (c != ' ' && c != '\n') {
         string = (char*) realloc(string, (currentSize + 1) * sizeof(char));
         if (string == NULL) exit(FAILED_TO_ALLOCATE_STRING_CODE);
-        string[currentSize] = spaceEater;
+        string[currentSize] = c;
         currentSize++;
     }
     while (scanf("%c", &c) == 1 && c != '\n') {
@@ -480,7 +486,7 @@ char *selectFeatureByIndex(FeatureNode *features, char *message) {
         return NULL;
     }
     temp = features;
-    for (int i = 0; i < chosenFeatureIndex; i++) temp = temp->next;
+    for (int i = 1; i < chosenFeatureIndex; i++) temp = temp->next;
     chosenFeature = (char*)malloc((strlen(temp->feature) + 1) * sizeof(char));
     strcpy(chosenFeature, temp->feature);
     return chosenFeature;
@@ -492,7 +498,7 @@ boolean isWorkerInProject(Project *project, Worker *worker) {
     return false;
 }
 void addFeatureToProject(Project *project) {
-    FeatureNode *feature = project->features;
+    FeatureNode *feature = NULL;
     FeatureNode *temp = NULL;
     char *newFeature = NULL;
     printf("Enter the new feature: ");
@@ -504,16 +510,11 @@ void addFeatureToProject(Project *project) {
             exit(FAILED_TO_ALLOCATE_FEATURE_CODE);
         }
         feature = project->features;
-        feature->feature = NULL;
-        feature->feature = (char*)malloc((strlen(newFeature) + 1) * sizeof(char));
-        if (feature->feature == NULL) {
-            exit(FAILED_TO_ALLOCATE_FEATURE_STRING_CODE);
-        }
-        strcpy(feature->feature, newFeature);
+        feature->feature = newFeature;
         feature->next = NULL;
-        free(newFeature);
         return;
     }
+    feature = project->features;
     temp = feature;
     while (temp != NULL) {
         if (strcmp(temp->feature, newFeature) == 0) {
